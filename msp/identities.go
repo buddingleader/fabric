@@ -9,7 +9,6 @@ package msp
 import (
 	"crypto"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/pem"
@@ -150,13 +149,6 @@ var (
 // signature; it returns nil if so or an error otherwise
 func (id *identity) Verify(msg []byte, sig []byte) error {
 	// mspIdentityLogger.Infof("Verifying signature")
-	cached := sha256.Sum256(append(msg, sig...))
-	rwMutex.RLock()
-	_, exists := cachedVerifiedMap[cached]
-	rwMutex.RUnlock()
-	if exists {
-		return nil
-	}
 
 	// Compute Hash
 	hashOpt, err := id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
@@ -180,9 +172,6 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	} else if !valid {
 		return errors.New("The signature is invalid")
 	}
-	rwMutex.Lock()
-	cachedVerifiedMap[cached] = struct{}{}
-	rwMutex.Unlock()
 
 	return nil
 }

@@ -170,10 +170,13 @@ func (s *SupportImpl) GetChaincodeDefinition(chaincodeName string, txsim ledger.
 	}
 
 	chaincodeDefinition, err := s.ChaincodeSupport.Lifecycle.ChaincodeDefinition(chaincodeName, txsim)
+	if err != nil {
+		return nil, err
+	}
 	rwMutex.Lock()
 	cachedChaincodeDefinitionMap[chaincodeName] = cachedChaincodeDefinition{time.Now(), chaincodeDefinition}
 	rwMutex.Unlock()
-	return chaincodeDefinition, err
+	return chaincodeDefinition, nil
 }
 
 // CheckACL checks the ACL for the resource for the Channel using the

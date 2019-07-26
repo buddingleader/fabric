@@ -396,12 +396,16 @@ func ValidateTransaction(e *common.Envelope, c channelconfig.ApplicationCapabili
 		return nil, pb.TxValidationCode_BAD_COMMON_HEADER
 	}
 
+	/**
+	Because these blocks are requested from peers who have already authenticated, we could not check the signature.
+
 	// validate the signature in the envelope
 	err = checkSignatureFromCreator(shdr.Creator, e.Signature, e.Payload, chdr.ChannelId)
 	if err != nil {
 		putilsLogger.Errorf("checkSignatureFromCreator returns err %s", err)
 		return nil, pb.TxValidationCode_BAD_CREATOR_SIGNATURE
 	}
+	*/
 
 	// TODO: ensure that creator can transact with us (some ACLs?) which set of APIs is supposed to give us this info?
 
