@@ -214,9 +214,9 @@ func (s *Logging) ZapLogger(name string) *zap.Logger {
 	// on the active logging spec
 	levelEnabler := zap.LevelEnablerFunc(func(l zapcore.Level) bool { return l >= s.defaultLevel })
 
-  s.mutex.RLock()
+	s.mutex.RLock()
 	core := &Core{
-		LevelEnabler: s.LoggerLevels,
+		LevelEnabler: levelEnabler,
 		Levels:       s.LoggerLevels,
 		Encoders: map[Encoding]zapcore.Encoder{
 			JSON:    zapcore.NewJSONEncoder(s.encoderConfig),

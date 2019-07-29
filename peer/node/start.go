@@ -28,8 +28,6 @@ import (
 	"github.com/hyperledger/fabric/common/deliver"
 	"github.com/hyperledger/fabric/common/flogging"
 	floggingmetrics "github.com/hyperledger/fabric/common/flogging/metrics"
-	"github.com/hyperledger/fabric/common/grpclogging"
-	"github.com/hyperledger/fabric/common/grpcmetrics"
 	"github.com/hyperledger/fabric/common/localmsp"
 	"github.com/hyperledger/fabric/common/metadata"
 	"github.com/hyperledger/fabric/common/metrics"
@@ -61,6 +59,7 @@ import (
 	endorsement3 "github.com/hyperledger/fabric/core/handlers/endorsement/api/identities"
 	"github.com/hyperledger/fabric/core/handlers/library"
 	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
+	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/ledger/cceventmgmt"
 	"github.com/hyperledger/fabric/core/ledger/kvledger"
 	"github.com/hyperledger/fabric/core/ledger/ledgermgmt"
@@ -225,7 +224,7 @@ func serve(args []string) error {
 		logger.Fatalf("Error loading secure config for peer (%s)", err)
 	}
 
-	throttle := comm.NewThrottle(grpcMaxConcurrency)
+	// throttle := comm.NewThrottle(grpcMaxConcurrency)
 	serverConfig.Logger = flogging.MustGetLogger("core.comm").With("server", "PeerServer")
 	serverConfig.MetricsProvider = metricsProvider
 	// serverConfig.UnaryInterceptors = append(
@@ -233,12 +232,12 @@ func serve(args []string) error {
 	// 	grpcmetrics.UnaryServerInterceptor(grpcmetrics.NewUnaryMetrics(metricsProvider)),
 	// 	grpclogging.UnaryServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
 	// )
-	serverConfig.StreamInterceptors = append(
-		serverConfig.StreamInterceptors,
-		grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
-		grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
-		throttle.StreamServerInterceptor,
-	)
+	// serverConfig.StreamInterceptors = append(
+	// 	serverConfig.StreamInterceptors,
+	// 	grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
+	// 	grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
+	// 	throttle.StreamServerInterceptor,
+	// )
 
 	peerServer, err := peer.NewPeerServer(listenAddr, serverConfig)
 	if err != nil {
@@ -816,7 +815,7 @@ func startAdminServer(peerListenAddr string, peerServer *grpc.Server, metricsPro
 		if err != nil {
 			logger.Fatalf("Error loading secure config for admin service (%s)", err)
 		}
-		throttle := comm.NewThrottle(grpcMaxConcurrency)
+		// throttle := comm.NewThrottle(grpcMaxConcurrency)
 		serverConfig.Logger = flogging.MustGetLogger("core.comm").With("server", "AdminServer")
 		serverConfig.MetricsProvider = metricsProvider
 		// serverConfig.UnaryInterceptors = append(
@@ -824,12 +823,12 @@ func startAdminServer(peerListenAddr string, peerServer *grpc.Server, metricsPro
 		// 	grpcmetrics.UnaryServerInterceptor(grpcmetrics.NewUnaryMetrics(metricsProvider)),
 		// 	grpclogging.UnaryServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
 		// )
-		serverConfig.StreamInterceptors = append(
-			serverConfig.StreamInterceptors,
-			grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
-			grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
-			throttle.StreamServerInterceptor,
-		)
+		// serverConfig.StreamInterceptors = append(
+		// 	serverConfig.StreamInterceptors,
+		// 	grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
+		// 	grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
+		// 	throttle.StreamServerInterceptor,
+		// )
 		adminServer, err := peer.NewPeerServer(adminListenAddress, serverConfig)
 		if err != nil {
 			logger.Fatalf("Failed to create admin server (%s)", err)
