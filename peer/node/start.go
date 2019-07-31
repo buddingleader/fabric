@@ -266,7 +266,11 @@ func serve(args []string) error {
 	}
 
 	go func() {
-		deliverServer, err := peer.NewPeerServer(viper.GetString("peer.deliverListenAddress"), serverConfig)
+		deliverListenAddr := viper.GetString("peer.deliverListenAddress")
+		if deliverListenAddr == "" {
+			deliverListenAddr = listenAddr
+		}
+		deliverServer, err := peer.NewPeerServer(deliverListenAddr, serverConfig)
 		if err != nil {
 			logger.Fatalf("Failed to create peer server (%s)", err)
 		}
