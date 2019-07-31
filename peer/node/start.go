@@ -9,7 +9,6 @@ package node
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -123,9 +122,6 @@ var nodeStartCmd = &cobra.Command{
 			return fmt.Errorf("trailing args detected")
 		}
 
-		go func() {
-			log.Println(http.ListenAndServe(":8061", nil))
-		}()
 		// Parsing of the command line is done so silence cmd usage
 		cmd.SilenceUsage = true
 		return serve(args)
