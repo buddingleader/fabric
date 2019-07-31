@@ -25,8 +25,6 @@ import (
 	"github.com/hyperledger/fabric/common/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
 	floggingmetrics "github.com/hyperledger/fabric/common/flogging/metrics"
-	"github.com/hyperledger/fabric/common/grpclogging"
-	"github.com/hyperledger/fabric/common/grpcmetrics"
 	"github.com/hyperledger/fabric/common/ledger/blockledger"
 	"github.com/hyperledger/fabric/common/localmsp"
 	"github.com/hyperledger/fabric/common/metrics"
@@ -490,21 +488,21 @@ func initializeServerConfig(conf *localconfig.TopLevel, metricsProvider metrics.
 	}
 
 	return comm.ServerConfig{
-		SecOpts:           secureOpts,
-		KaOpts:            kaOpts,
-		Logger:            commLogger,
-		MetricsProvider:   metricsProvider,
-		ConnectionTimeout: conf.General.ConnectionTimeout,
+		SecOpts:            secureOpts,
+		KaOpts:             kaOpts,
+		Logger:             commLogger,
+		MetricsProvider:    metricsProvider,
+		ConnectionTimeout:  conf.General.ConnectionTimeout,
 		StreamInterceptors: []grpc.StreamServerInterceptor{
-			grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
-			grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
+			// grpcmetrics.StreamServerInterceptor(grpcmetrics.NewStreamMetrics(metricsProvider)),
+			// grpclogging.StreamServerInterceptor(flogging.MustGetLogger("comm.grpc.server").Zap()),
 		},
 		UnaryInterceptors: []grpc.UnaryServerInterceptor{
-			grpcmetrics.UnaryServerInterceptor(grpcmetrics.NewUnaryMetrics(metricsProvider)),
-			grpclogging.UnaryServerInterceptor(
-				flogging.MustGetLogger("comm.grpc.server").Zap(),
-				grpclogging.WithLeveler(grpclogging.LevelerFunc(grpcLeveler)),
-			),
+			// grpcmetrics.UnaryServerInterceptor(grpcmetrics.NewUnaryMetrics(metricsProvider)),
+			// grpclogging.UnaryServerInterceptor(
+			// 	flogging.MustGetLogger("comm.grpc.server").Zap(),
+			// 	grpclogging.WithLeveler(grpclogging.LevelerFunc(grpcLeveler)),
+			// ),
 		},
 	}
 }

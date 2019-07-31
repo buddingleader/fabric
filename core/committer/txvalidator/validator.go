@@ -146,7 +146,8 @@ func (v *TxValidator) Validate(block *common.Block) error {
 	// array of txids
 	txidArray := make([]string, len(block.Data.Data))
 
-	results := make(chan *blockValidationResult)
+	// Prevent goroutine leaks because each validateTx goroutines may return two errors, but only handle once.
+	results := make(chan *blockValidationResult, len(block.Data.Data))
 	go func() {
 		for tIdx, d := range block.Data.Data {
 			// ensure that we don't have too many concurrent validation workers
@@ -334,11 +335,13 @@ func (v *TxValidator) validateTx(req *blockValidationRequest, results chan<- *bl
 			txID = chdr.TxId
 
 			// Check duplicate transactions
-			erroneousResultEntry := v.checkTxIdDupsLedger(tIdx, chdr, v.Support.Ledger())
-			if erroneousResultEntry != nil {
-				results <- erroneousResultEntry
-				return
-			}
+			go func() {
+				erroneousResultEntry := v.checkTxIdDupsLedger(tIdx, chdr, v.Support.Ledger())
+				if erroneousResultEntry != nil {
+					results <- erroneousResultEntry
+					return
+				}
+			}()
 
 			// Validate tx with vscc and policy
 			logger.Debug("Validating transaction vscc tx validate")

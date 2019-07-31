@@ -269,8 +269,16 @@ func serve(args []string) error {
 		}
 	}
 
-	abServer := peer.NewDeliverEventsServer(mutualTLS, policyCheckerProvider, &peer.DeliverChainManager{}, metricsProvider)
-	pb.RegisterDeliverServer(peerServer.Server(), abServer)
+	go func() {
+		deliverServer, err := peer.NewPeerServer(viper.GetString("peer.deliverListenAddress"), serverConfig)
+		if err != nil {
+			logger.Fatalf("Failed to create peer server (%s)", err)
+		}
+
+		abServer := peer.NewDeliverEventsServer(mutualTLS, policyCheckerProvider, &peer.DeliverChainManager{}, metricsProvider)
+		pb.RegisterDeliverServer(deliverServer.Server(), abServer)
+		deliverServer.Start()
+	}()
 
 	// Initialize chaincode service
 	chaincodeSupport, ccp, sccp, packageProvider := startChaincodeServer(peerHost, aclProvider, pr, opsSystem)

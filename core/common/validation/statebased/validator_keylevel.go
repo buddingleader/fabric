@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	commonerrors "github.com/hyperledger/fabric/common/errors"
-	"github.com/hyperledger/fabric/core/handlers/validation/api/policies"
+	validation "github.com/hyperledger/fabric/core/handlers/validation/api/policies"
 	"github.com/hyperledger/fabric/core/ledger"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/hyperledger/fabric/protos/common"
@@ -236,11 +236,23 @@ func (klv *KeyLevelValidator) Validate(cc string, blockNum, txNum uint64, rwsetB
 		// public writes
 		// we validate writes against key-level validation parameters
 		// if any are present or the chaincode-wide endorsement policy
+		var wg sync.WaitGroup
+		var checkError commonerrors.TxValidationError
+		wg.Add(len(nsRWSet.KvRwSet.Writes))
 		for _, pubWrite := range nsRWSet.KvRwSet.Writes {
-			err := policyChecker.checkSBAndCCEP(cc, "", pubWrite.Key, blockNum, txNum)
-			if err != nil {
-				return err
-			}
+			go func(key string) {
+				defer wg.Done()
+
+				err := policyChecker.checkSBAndCCEP(cc, "", key, blockNum, txNum)
+				if err != nil {
+					checkError = err
+				}
+			}(pubWrite.Key)
+		}
+
+		wg.Wait()
+		if checkError != nil {
+			return checkError
 		}
 		// public metadata writes
 		// we validate writes against key-level validation parameters

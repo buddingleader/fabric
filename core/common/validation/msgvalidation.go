@@ -19,12 +19,10 @@ package validation
 import (
 	"bytes"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric/common/channelconfig"
 	"github.com/hyperledger/fabric/common/flogging"
 	mspmgmt "github.com/hyperledger/fabric/msp/mgmt"
 	"github.com/hyperledger/fabric/protos/common"
-	"github.com/hyperledger/fabric/protos/msp"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/pkg/errors"
@@ -99,20 +97,20 @@ func ValidateProposalMessage(signedProp *pb.SignedProposal) (*pb.Proposal, *comm
 	}
 
 	// validate the signature
-	err = checkSignatureFromCreator(shdr.Creator, signedProp.Signature, signedProp.ProposalBytes, chdr.ChannelId)
-	if err != nil {
-		// log the exact message on the peer but return a generic error message to
-		// avoid malicious users scanning for channels
-		putilsLogger.Warningf("channel [%s]: %s", chdr.ChannelId, err)
-		sId := &msp.SerializedIdentity{}
-		err := proto.Unmarshal(shdr.Creator, sId)
-		if err != nil {
-			// log the error here as well but still only return the generic error
-			err = errors.Wrap(err, "could not deserialize a SerializedIdentity")
-			putilsLogger.Warningf("channel [%s]: %s", chdr.ChannelId, err)
-		}
-		return nil, nil, nil, errors.Errorf("access denied: channel [%s] creator org [%s]", chdr.ChannelId, sId.Mspid)
-	}
+	// err = checkSignatureFromCreator(shdr.Creator, signedProp.Signature, signedProp.ProposalBytes, chdr.ChannelId)
+	// if err != nil {
+	// 	// log the exact message on the peer but return a generic error message to
+	// 	// avoid malicious users scanning for channels
+	// 	putilsLogger.Warningf("channel [%s]: %s", chdr.ChannelId, err)
+	// 	sId := &msp.SerializedIdentity{}
+	// 	err := proto.Unmarshal(shdr.Creator, sId)
+	// 	if err != nil {
+	// 		// log the error here as well but still only return the generic error
+	// 		err = errors.Wrap(err, "could not deserialize a SerializedIdentity")
+	// 		putilsLogger.Warningf("channel [%s]: %s", chdr.ChannelId, err)
+	// 	}
+	// 	return nil, nil, nil, errors.Errorf("access denied: channel [%s] creator org [%s]", chdr.ChannelId, sId.Mspid)
+	// }
 
 	// Verify that the transaction ID has been computed properly.
 	// This check is needed to ensure that the lookup into the ledger

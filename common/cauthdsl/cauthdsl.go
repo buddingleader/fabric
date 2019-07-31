@@ -8,6 +8,8 @@ package cauthdsl
 
 import (
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/hyperledger/fabric/common/flogging"
@@ -63,14 +65,21 @@ func compile(policy *cb.SignaturePolicy, identities []*mb.MSPPrincipal, deserial
 			grepKey := time.Now().UnixNano()
 			cauthdslLogger.Debugf("%p gate %d evaluation starts", signedData, grepKey)
 			verified := int32(0)
-			_used := make([]bool, len(used))
+			// _used := make([]bool, len(used))
+			var wg sync.WaitGroup
+			wg.Add(len(policies))
 			for _, policy := range policies {
-				copy(_used, used)
-				if policy(signedData, _used) {
-					verified++
-					copy(used, _used)
-				}
+				// copy(_used, used)
+				go func(do func([]IdentityAndSignature, []bool) bool) {
+					defer wg.Done()
+					if do(signedData, used) {
+						atomic.AddInt32(&verified, 1)
+						// verified++
+						// copy(used, _used)
+					}
+				}(policy)
 			}
+			wg.Wait()
 
 			if verified >= t.NOutOf.N {
 				cauthdslLogger.Debugf("%p gate %d evaluation succeeds", signedData, grepKey)

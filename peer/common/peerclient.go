@@ -203,7 +203,7 @@ func GetPeerDeliverClient(address, tlsRootCertFile string) (api.PeerDeliverClien
 	if address != "" {
 		peerClient, err = NewPeerClientForAddress(address, tlsRootCertFile)
 	} else {
-		peerClient, err = NewPeerClientFromEnv()
+		peerClient, err = NewPeerClientForAddress(viper.GetString("peer.deliverListenAddress"), tlsRootCertFile)
 	}
 	if err != nil {
 		return nil, err
