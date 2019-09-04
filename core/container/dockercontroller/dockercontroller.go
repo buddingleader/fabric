@@ -142,6 +142,7 @@ func getDockerHostConfig() *docker.HostConfig {
 	dockerLogger.Debugf("docker container hostconfig NetworkMode: %s", networkMode)
 
 	return &docker.HostConfig{
+		Binds:   viper.GetStringSlice(dockerKey("Binds")),
 		CapAdd:  viper.GetStringSlice(dockerKey("CapAdd")),
 		CapDrop: viper.GetStringSlice(dockerKey("CapDrop")),
 
